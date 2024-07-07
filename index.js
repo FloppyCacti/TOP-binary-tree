@@ -9,22 +9,14 @@ Node = (data) => {
 const Tree = (array) => {
   let root = buildTree(array);
 
-  function buildTree(arr, start = 0, end, sorted = false) {
-    if (!sorted) {
-      arr = [...new Set(array)];
-      arr = arr.sort((a, b) => a - b);
-      const length = arr.length;
-      end = length - 1;
-      sorted = true;
-    }
-
+  function buildTree(arr, start = 0, end = arr.length - 1) {
     if (start > end) return null;
 
     const middle = Math.floor((start + end) / 2);
     const rootNode = Node(arr[middle]);
 
-    rootNode.left = buildTree(arr, start, middle - 1, sorted);
-    rootNode.right = buildTree(arr, middle + 1, end, sorted);
+    rootNode.left = buildTree(arr, start, middle - 1);
+    rootNode.right = buildTree(arr, middle + 1, end);
 
     return rootNode;
   }
@@ -231,7 +223,37 @@ const Tree = (array) => {
     // If not found in either subtree, return null
     return null;
   }
-  function isBalanced() {}
+  function isBalanced(node) {
+    // Helper function to determine the height of the tree
+    function heightAndBalance(node) {
+      if (node === null) {
+        return 0; // height of an empty tree is 0
+      }
+
+      const leftHeight = heightAndBalance(node.left);
+      if (leftHeight == -1) {
+        return -1; // left subtree is not balanced
+      }
+
+      const rightHeight = heightAndBalance(node.right);
+      if (rightHeight == -1) {
+        return -1; // right subtree is not balanced
+      }
+
+      if (Math.abs(leftHeight - rightHeight) > 1) {
+        return -1; // current node is not balanced
+      } else {
+        return Math.max(leftHeight, rightHeight) + 1; // return height of the subtree
+      }
+    }
+
+    return heightAndBalance(node) !== -1;
+  }
+  function rebalance() {
+    const arr = inOrder();
+    root = buildTree(arr); // Rebuild the tree with balanced structure
+    return root;
+  }
   return {
     root,
     insert,
@@ -243,23 +265,7 @@ const Tree = (array) => {
     postOrder,
     height,
     depth,
+    isBalanced,
+    rebalance,
   };
 };
-
-const tree = Tree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
-
-const prettyPrint = (node, prefix = "", isLeft = true) => {
-  if (node === null) return;
-  if (node.right !== null) {
-    prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
-  }
-  console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.data}`);
-  if (node.left !== null) {
-    prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
-  }
-};
-
-tree.insert(100);
-tree.insert(2);
-prettyPrint(tree.root);
-console.log(tree.depth(9));
